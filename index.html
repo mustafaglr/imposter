@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İmposter Kelime Oyunu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        button.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .player-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .player-item {
+            padding: 10px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .room-code {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            border: 2px dashed #ffc107;
+        }
+
+        .room-code h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .room-code .code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #856404;
+            letter-spacing: 3px;
+        }
+
+        .role-display {
+            text-align: center;
+            padding: 40px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .role-display.citizen {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .role-display.imposter {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .role-display h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .word-display {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+        }
+
+        .starting-player {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            border: 2px solid #28a745;
+        }
+
+        .starting-player h3 {
+            color: #155724;
+            font-size: 1.5em;
+        }
+
+        .results-table {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .results-table th, .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .results-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .imposter-tag {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .word-display {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 İmposter Kelime Oyunu</h1>
+
+        <!-- Ana Menü -->
+        <div id="mainMenu" class="screen active">
+            <div class="input-group">
+                <label>Ne yapmak istersiniz?</label>
+                <button onclick="showCreateGame()">Yeni Oyun Oluştur</button>
+                <button class="secondary" onclick="showJoinGame()">Oyuna Katıl</button>
+            </div>
+        </div>
+
+        <!-- Oyun Oluşturma -->
+        <div id="createGame" class="screen">
+            <div class="input-group">
+                <label>Oyuncu Sayısı (4-10)</label>
+                <input type="number" id="playerCount" min="4" max="10" value="5">
+            </div>
+            <div class="input-group">
+                <label>Host Adınız</label>
+                <input type="text" id="hostName" placeholder="Adınızı girin">
+            </div>
+            <button onclick="createGame()">Oyunu Oluştur</button>
+            <button class="secondary" onclick="showMainMenu()">Geri</button>
+        </div>
+
+        <!-- Oyun Odası (Host) -->
+        <div id="hostLobby" class="screen">
+            <div class="room-code">
+                <h3>Oda Kodu</h3>
+                <div class="code" id="roomCodeDisplay"></div>
+                <p class="info-text">Bu kodu oyunculara gönderin</p>
+            </div>
+            <div class="player-list">
+                <h3>Katılan Oyuncular (<span id="joinedCount">0</span>/<span id="totalCount">0</span>)</h3>
+                <div id="playerListHost"></div>
+            </div>
+            <button onclick="startGame()" id="startGameBtn" disabled>Oyunu Başlat</button>
+            <button class="secondary" onclick="cancelGame()">İptal Et</button>
+        </div>
+
+        <!-- Oyuna Katılma -->
+        <div id="joinGame" class="screen">
+            <div class="input-group">
+                <label>Oda Kodu</label>
+                <input type="text" id="roomCodeInput" placeholder="Oda kodunu girin" maxlength="6">
+            </div>
+            <div class="input-group">
+                <label>Adınız</label>
+                <input type="text" id="playerNameInput" placeholder="Adınızı girin">
+            </div>
+            <button onclick="joinGame()">Katıl</button>
+            <button class="secondary" onclick="showMainMenu()">Geri</button>
+        </div>
+
+        <!-- Oyuncu Bekleme Ekranı -->
+        <div id="waitingRoom" class="screen">
+            <div class="room-code">
+                <h3>Oyuna Katıldınız!</h3>
+                <p class="info-text">Host oyunu başlatmasını bekleyin...</p>
+            </div>
+            <div class="player-list">
+                <h3>Katılan Oyuncular</h3>
+                <div id="playerListWaiting"></div>
+            </div>
+        </div>
+
+        <!-- Rol Gösterme -->
+        <div id="roleReveal" class="screen">
+            <div id="roleDisplay"></div>
+            <button class="success" onclick="showInGame()">Anladım, Oyuna Başla</button>
+        </div>
+
+        <!-- Oyun İçi (Host) -->
+        <div id="inGameHost" class="screen">
+            <div class="starting-player">
+                <h3>🎯 Oyuna Başlayan</h3>
+                <p style="font-size: 1.5em; margin-top: 10px; color: #155724;" id="startingPlayerName"></p>
+            </div>
+            <div class="info-text">
+                <p>Oyun devam ediyor...</p>
+                <p>Her oyuncu kelimesini/ipucusunu görmüştür.</p>
+            </div>
+            <button class="secondary" onclick="endGame()">Oyunu Bitir / Sonucu Göster</button>
+            <button class="secondary" onclick="cancelRoom()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); margin-top: 10px;">Odayı İptal Et</button>
+        </div>
+
+        <!-- Oyun İçi (Oyuncu) -->
+        <div id="inGamePlayer" class="screen">
+            <div class="starting-player">
+                <h3>🎯 Oyuna Başlayan</h3>
+                <p style="font-size: 1.5em; margin-top: 10px; color: #155724;" id="startingPlayerNamePlayer"></p>
+            </div>
+            <div class="info-text">
+                <p>Oyun devam ediyor...</p>
+                <p>Host oyunu bitirene kadar bekleyin.</p>
+            </div>
+        </div>
+
+        <!-- Sonuç Ekranı -->
+        <div id="results" class="screen">
+            <h2 style="text-align: center; margin-bottom: 20px;">📊 Oyun Sonucu</h2>
+            <div class="room-code">
+                <h3>Asıl Kelime</h3>
+                <div class="code" id="actualWord"></div>
+            </div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Oyuncu</th>
+                        <th>Rol</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody"></tbody>
+            </table>
+            <div id="hostResultsActions">
+                <button onclick="newGameSameRoom()">Aynı Oyuncularla Yeni Oyun</button>
+                <button class="secondary" onclick="showMainMenu()">Ana Menüye Dön</button>
+            </div>
+            <div id="playerResultsActions" style="display: none;">
+                <p class="info-text">Host yeni oyun başlatmasını bekleyin...</p>
+                <button class="secondary" onclick="showMainMenu()">Ana Menüye Dön</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameData = null;
+        let wordsData = null;
+        let currentUser = null;
+        let pollInterval = null;
+
+        // Words.json dosyasını yükle
+        async function loadWords() {
+            try {
+                const response = await fetch('words.json');
+                wordsData = await response.json();
+                console.log('Kelimeler yüklendi:', wordsData.categories.length, 'kategori');
+            } catch (error) {
+                console.error('Kelimeler yüklenemedi:', error);
+                alert('Kelime listesi yüklenemedi! words.json dosyasının varlığından emin olun.');
+            }
+        }
+
+        // Sayfa yüklendiğinde kelimeleri yükle
+        loadWords();
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showMainMenu() {
+            showScreen('mainMenu');
+            stopPolling();
+            gameData = null;
+            currentUser = null;
+        }
+
+        function showCreateGame() {
+            showScreen('createGame');
+        }
+
+        function showJoinGame() {
+            showScreen('joinGame');
+        }
+
+        function generateRoomCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function createGame() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            const hostName = document.getElementById('hostName').value.trim();
+
+            if (!hostName) {
+                alert('Lütfen adınızı girin!');
+                return;
+            }
+
+            if (playerCount < 4 || playerCount > 10) {
+                alert('Oyuncu sayısı 4-10 arasında olmalıdır!');
+                return;
+            }
+
+            if (!wordsData) {
+                alert('Kelime listesi henüz yüklenmedi, lütfen bekleyin...');
+                return;
+            }
+
+            const roomCode = generateRoomCode();
+            
+            gameData = {
+                roomCode: roomCode,
+                totalPlayers: playerCount,
+                players: [{ name: hostName, role: null, word: null, isHost: true }],
+                started: false,
+                finished: false,
+                actualWord: null,
+                imposterHint: null,
+                category: null,
+                startingPlayer: null
+            };
+
+            currentUser = { name: hostName, isHost: true };
+            
+            saveGameData(roomCode, gameData);
+            
+            document.getElementById('roomCodeDisplay').textContent = roomCode;
+            document.getElementById('totalCount').textContent = playerCount;
+            updatePlayerList();
+            showScreen('hostLobby');
+            
+            startPolling(roomCode);
+        }
+
+        function joinGame() {
+            const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            const playerName = document.getElementById('playerNameInput').value.trim();
+
+            if (!roomCode || !playerName) {
+                alert('Lütfen oda kodu ve adınızı girin!');
+                return;
+            }
+
+            const loadedGame = loadGameData(roomCode);
+            
+            if (!loadedGame) {
+                alert('Oda bulunamadı! Kod doğru mu kontrol edin.');
+                return;
+            }
+
+            if (loadedGame.players.length >= loadedGame.totalPlayers) {
+                alert('Oda dolu!');
+                return;
+            }
+
+            if (loadedGame.started) {
+                alert('Oyun zaten başlamış!');
+                return;
+            }
+
+            if (loadedGame.players.some(p => p.name === playerName)) {
+                alert('Bu isimde bir oyuncu zaten var!');
+                return;
+            }
+
+            loadedGame.players.push({ name: playerName, role: null, word: null, isHost: false });
+            saveGameData(roomCode, loadedGame);
+
+            gameData = loadedGame;
+            currentUser = { name: playerName, isHost: false };
+
+            updatePlayerListWaiting();
+            showScreen('waitingRoom');
+            startPolling(roomCode);
+        }
+
+        function updatePlayerList() {
+            const list = document.getElementById('playerListHost');
+            list.innerHTML = '';
+            
+            gameData.players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>${player.name} ${player.isHost ? '(Host)' : ''}</span>
+                `;
+                list.appendChild(div);
+            });
+
+            document.getElementById('joinedCount').textContent = gameData.players.length;
+            document.getElementById('startGameBtn').disabled = gameData.players.length !== gameData.totalPlayers;
+        }
+
+        function updatePlayerListWaiting() {
+            const list = document.getElementById('playerListWaiting');
+            list.innerHTML = '';
+            
+            gameData.players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>${player.name} ${player.isHost ? '(Host)' : ''}</span>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function startGame() {
+            if (!wordsData || !wordsData.categories || wordsData.categories.length === 0) {
+                alert('Kelime listesi yüklenmemiş!');
+                return;
+            }
+
+            // Rastgele kategori ve kelime seç
+            const randomCategory = wordsData.categories[Math.floor(Math.random() * wordsData.categories.length)];
+            const randomItem = randomCategory.items[Math.floor(Math.random() * randomCategory.items.length)];
+
+            gameData.actualWord = randomItem.word;
+            gameData.imposterHint = randomItem.imposterHint;
+            gameData.category = randomCategory.name;
+
+            // Rastgele imposter seç
+            const imposterIndex = Math.floor(Math.random() * gameData.players.length);
+            
+            // Rolleri ata
+            gameData.players.forEach((player, index) => {
+                if (index === imposterIndex) {
+                    player.role = 'imposter';
+                    player.word = gameData.imposterHint;
+                } else {
+                    player.role = 'citizen';
+                    player.word = gameData.actualWord;
+                }
+            });
+
+            // Başlayan oyuncuyu seç (imposter %30 şans)
+            const rand = Math.random();
+            const imposterChance = 0.3 / gameData.players.length;
+            const citizenChance = (1 - 0.3) / (gameData.players.length - 1);
+            
+            let cumulativeChance = 0;
+            let startingIndex = 0;
+            
+            for (let i = 0; i < gameData.players.length; i++) {
+                const chance = gameData.players[i].role === 'imposter' ? imposterChance : citizenChance;
+                cumulativeChance += chance;
+                if (rand < cumulativeChance) {
+                    startingIndex = i;
+                    break;
+                }
+            }
+            
+            gameData.startingPlayer = gameData.players[startingIndex].name;
+            gameData.started = true;
+
+            saveGameData(gameData.roomCode, gameData);
+            showRoleReveal();
+        }
+
+        function showRoleReveal() {
+            const player = gameData.players.find(p => p.name === currentUser.name);
+            const display = document.getElementById('roleDisplay');
+            
+            if (player.role === 'imposter') {
+                display.innerHTML = `
+                    <div class="role-display imposter">
+                        <h2>🎭 SEN IMPOSTER'SIN!</h2>
+                        <div class="word-display">${player.word}</div>
+                        <p style="font-size: 1.2em; margin-top: 20px;">Bu bir ipucu! Diğerleri asıl kelimeyi biliyor.</p>
+                    </div>
+                `;
+            } else {
+                display.innerHTML = `
+                    <div class="role-display citizen">
+                        <h2>✅ Sen Normal Oyuncusun</h2>
+                        <div class="word-display">${player.word}</div>
+                        <p style="font-size: 1.2em; margin-top: 20px; color: #333;">Bu kelimeyi bil ama imposter'a belli etme!</p>
+                    </div>
+                `;
+            }
+            
+            showScreen('roleReveal');
+        }
+
+        function showInGame() {
+            document.getElementById('startingPlayerName').textContent = gameData.startingPlayer;
+            document.getElementById('startingPlayerNamePlayer').textContent = gameData.startingPlayer;
+            
+            if (currentUser.isHost) {
+                showScreen('inGameHost');
+            } else {
+                showScreen('inGamePlayer');
+            }
+        }
+
+        function endGame() {
+            gameData.finished = true;
+            saveGameData(gameData.roomCode, gameData);
+            showResults();
+        }
+
+        function showResults() {
+            document.getElementById('actualWord').textContent = gameData.actualWord;
+            
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+            
+            gameData.players.forEach(player => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${player.name}</td>
+                    <td>
+                        ${player.role === 'imposter' 
+                            ? `<span class="imposter-tag">IMPOSTER</span> <span style="color: #666; font-size: 0.9em;">(İpucu: ${gameData.imposterHint})</span>` 
+                            : 'Normal Oyuncu'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Host ve oyuncular için farklı butonlar göster
+            if (currentUser.isHost) {
+                document.getElementById('hostResultsActions').style.display = 'block';
+                document.getElementById('playerResultsActions').style.display = 'none';
+            } else {
+                document.getElementById('hostResultsActions').style.display = 'none';
+                document.getElementById('playerResultsActions').style.display = 'block';
+            }
+            
+            showScreen('results');
+        }
+
+        function newGameSameRoom() {
+            if (!currentUser.isHost) {
+                alert('Sadece host yeni oyun başlatabilir!');
+                return;
+            }
+
+            if (!wordsData || !wordsData.categories || wordsData.categories.length === 0) {
+                alert('Kelime listesi yüklenmemiş!');
+                return;
+            }
+
+            // Aynı oda kodu ve oyuncularla devam et
+            const roomCode = gameData.roomCode;
+            const players = gameData.players.map(p => ({
+                name: p.name,
+                role: null,
+                word: null,
+                isHost: p.isHost
+            }));
+            
+            gameData = {
+                roomCode: roomCode,
+                totalPlayers: gameData.totalPlayers,
+                players: players,
+                started: false,
+                finished: false,
+                actualWord: null,
+                imposterHint: null,
+                category: null,
+                startingPlayer: null,
+                resetTime: Date.now()
+            };
+
+            saveGameData(roomCode, gameData);
+            
+            // Host için lobby göster
+            document.getElementById('roomCodeDisplay').textContent = roomCode;
+            document.getElementById('totalCount').textContent = gameData.totalPlayers;
+            updatePlayerList();
+            showScreen('hostLobby');
+        }
+
+        function cancelGame() {
+            if (confirm('Oyunu iptal etmek istediğinizden emin misiniz?')) {
+                localStorage.removeItem(`game_${gameData.roomCode}`);
+                showMainMenu();
+            }
+        }
+
+        function cancelRoom() {
+            if (confirm('Tüm oyuncularla birlikte odayı iptal etmek istediğinizden emin misiniz?')) {
+                localStorage.removeItem(`game_${gameData.roomCode}`);
+                showMainMenu();
+            }
+        }
+
+        // LocalStorage ile veri yönetimi
+        function saveGameData(roomCode, data) {
+            localStorage.setItem(`game_${roomCode}`, JSON.stringify(data));
+        }
+
+        function loadGameData(roomCode) {
+            const data = localStorage.getItem(`game_${roomCode}`);
+            return data ? JSON.parse(data) : null;
+        }
+
+        // Polling (otomatik güncelleme)
+        function startPolling(roomCode) {
+            stopPolling();
+            pollInterval = setInterval(() => {
+                const updated = loadGameData(roomCode);
+                if (!updated) return;
+
+                const oldPlayerCount = gameData.players.length;
+                const wasFinished = gameData.finished;
+                gameData = updated;
+
+                // Oyuncu listesi güncellemesi
+                if (document.getElementById('hostLobby').classList.contains('active')) {
+                    if (oldPlayerCount !== gameData.players.length) {
+                        updatePlayerList();
+                    }
+                }
+
+                if (document.getElementById('waitingRoom').classList.contains('active')) {
+                    updatePlayerListWaiting();
+                    
+                    // Oyun başladıysa rol göster
+                    if (gameData.started) {
+                        showRoleReveal();
+                    }
+                }
+
+                // Oyun bittiyse sonuçları göster
+                if (gameData.finished && !document.getElementById('results').classList.contains('active')) {
+                    showResults();
+                }
+
+                // Yeni oyun başladıysa lobby'ye/bekleme ekranına dön
+                if (!gameData.started && !gameData.finished && wasFinished) {
+                    if (currentUser.isHost) {
+                        document.getElementById('roomCodeDisplay').textContent = gameData.roomCode;
+                        document.getElementById('totalCount').textContent = gameData.totalPlayers;
+                        updatePlayerList();
+                        showScreen('hostLobby');
+                    } else {
+                        updatePlayerListWaiting();
+                        showScreen('waitingRoom');
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+
+        // URL'den oda kodu algılama
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomCode = urlParams.get('room');
+            
+            if (roomCode) {
+                document.getElementById('roomCodeInput').value = roomCode;
+                showJoinGame();
+            }
+        });
+    </script>
+</body>
+</html>
